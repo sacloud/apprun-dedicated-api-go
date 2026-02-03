@@ -3,4 +3,3 @@ vendor/
 dist/
 work/
 .vscode/
-go-template
