@@ -87,9 +87,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestCreate_failed(t *testing.T) {
-	var expected v1.Error
-	expected.SetFake()
-	expected.SetStatus(http.StatusBadRequest)
+	expected := apprun_test.Fake400Error()
 	assert, api := setup(t, &expected, int(expected.GetStatus()))
 
 	c, p, err := apprun_test.OreSign()
@@ -122,9 +120,7 @@ func TestRead(t *testing.T) {
 }
 
 func TestRead_failed(t *testing.T) {
-	var expected v1.Error
-	expected.SetFake()
-	expected.SetStatus(http.StatusNotFound)
+	expected := apprun_test.Fake404Error()
 	assert, api := setup(t, &expected, int(expected.GetStatus()))
 
 	certID := v1.CertificateID(uuid.New())
@@ -151,9 +147,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUpdate_failed(t *testing.T) {
-	var expected v1.Error
-	expected.SetFake()
-	expected.SetStatus(http.StatusBadRequest)
+	expected := apprun_test.Fake400Error()
 	assert, api := setup(t, &expected, int(expected.GetStatus()))
 	cid := v1.CertificateID(uuid.New())
 	c, p, err := apprun_test.OreSign()
@@ -179,9 +173,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDelete_failed(t *testing.T) {
-	var expected v1.Error
-	expected.SetFake()
-	expected.SetStatus(http.StatusNotFound)
+	expected := apprun_test.Fake404Error()
 	assert, api := setup(t, &expected, int(expected.GetStatus()))
 
 	certID := v1.CertificateID(uuid.New())

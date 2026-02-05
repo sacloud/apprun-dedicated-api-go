@@ -40,3 +40,33 @@ func FromOpt[
 	}
 	return
 }
+
+// generic-ish type cast helper function
+func IntoNullable[
+	T, U any,
+	P interface {
+		*T
+		SetToNull()
+		SetTo(u U)
+	},
+](
+	v *U,
+) (
+	ret T,
+) {
+	if v == nil {
+		P(&ret).SetToNull()
+	} else {
+		P(&ret).SetTo(*v)
+	}
+
+	return
+}
+
+func MapSlice[T, U any](src []T, f func(T) U) (ret []U) {
+	ret = make([]U, len(src))
+	for i, v := range src {
+		ret[i] = f(v)
+	}
+	return
+}

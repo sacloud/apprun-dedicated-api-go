@@ -25,6 +25,7 @@ import (
 
 var theClient saclient.Client
 
+//nolint:nakedret
 func NewTestClient(
 	v interface{ Encode(*jx.Encoder) },
 	s ...int,
@@ -87,12 +88,25 @@ func FakeCertificate() (ret v1.ReadCertificate) {
 	return
 }
 
+func Fake400Error() (ret v1.Error) {
+	ret.SetFake()
+	ret.SetStatus(http.StatusBadRequest)
+	return
+}
+
 func Fake403Error() (ret v1.Error) {
 	ret.SetFake()
 	ret.SetStatus(http.StatusForbidden)
 	return
 }
 
+func Fake404Error() (ret v1.Error) {
+	ret.SetFake()
+	ret.SetStatus(http.StatusNotFound)
+	return
+}
+
+//nolint:nakedret
 func OreSign() (certPEM, keyPEM []byte, err error) {
 	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 
@@ -133,5 +147,18 @@ func OreSign() (certPEM, keyPEM []byte, err error) {
 
 	certPEM = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 	keyPEM = pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: key})
+	return
+}
+
+func FakeApplicationVersion() (ret v1.ReadApplicationVersionDetail) {
+	ret.SetFake()
+	ret.SetVersion(1)
+	ret.SetCPU(128)
+	ret.SetMemory(128)
+	ret.FixedScale.Reset()
+	ret.MinScale.Reset()
+	ret.MaxScale.Reset()
+	ret.ScaleInThreshold.Reset()
+	ret.ScaleOutThreshold.Reset()
 	return
 }
