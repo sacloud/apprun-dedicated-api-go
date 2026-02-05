@@ -11,6 +11,7 @@ require (
 	github.com/go-faster/jx v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/ogen-go/ogen v1.18.0
+	github.com/sacloud/packages-go v0.0.12
 	github.com/sacloud/saclient-go v0.3.1
 	github.com/stretchr/testify v1.11.1
 )
@@ -31,7 +32,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/sacloud/api-client-go v0.3.5 // indirect
 	github.com/sacloud/go-http v0.1.9 // indirect
-	github.com/sacloud/packages-go v0.0.12 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
