@@ -128,7 +128,7 @@ type NodeInterface struct {
 	ConnectsToLB   bool
 }
 
-func (n *NodeInterface) into() (ret v1.AutoScalingGroupNodeInterface) {
+func (n NodeInterface) into() (ret v1.AutoScalingGroupNodeInterface) {
 	ret.SetInterfaceIndex(n.InterfaceIndex)
 	ret.SetUpstream(n.Upstream)
 	ret.SetIpPool(n.IpPool)
@@ -140,7 +140,7 @@ func (n *NodeInterface) into() (ret v1.AutoScalingGroupNodeInterface) {
 	return
 }
 
-func (n *NodeInterface) from(res *v1.AutoScalingGroupNodeInterface) {
+func (n *NodeInterface) From(res *v1.AutoScalingGroupNodeInterface) {
 	n.InterfaceIndex = res.GetInterfaceIndex()
 	n.Upstream = res.GetUpstream()
 	n.IpPool = res.GetIpPool()
@@ -160,14 +160,14 @@ type CreateParams struct {
 	Interfaces             []NodeInterface
 }
 
-func (c *CreateParams) into() (ret v1.CreateAutoScalingGroup) {
+func (c CreateParams) into() (ret v1.CreateAutoScalingGroup) {
 	ret.SetName(c.Name)
 	ret.SetZone(c.Zone)
 	ret.SetNameServers(c.NameServers)
 	ret.SetWorkerServiceClassPath(c.WorkerServiceClassPath)
 	ret.SetMinNodes(c.MinNodes)
 	ret.SetMaxNodes(c.MaxNodes)
-	ret.SetInterfaces(common.MapSlice(c.Interfaces, func(n NodeInterface) v1.AutoScalingGroupNodeInterface { return n.into() }))
+	ret.SetInterfaces(common.MapSlice(c.Interfaces, NodeInterface.into))
 
 	return
 }
@@ -195,8 +195,5 @@ func (a *AutoScalingGroupDetail) from(res *v1.ReadAutoScalingGroupDetail) {
 	a.MaxNodes = res.GetMaxNodes()
 	a.WorkerNodeCount = res.GetWorkerNodeCount()
 	a.Deleting = res.GetDeleting()
-	a.Interfaces = common.MapSlice(res.GetInterfaces(), func(n v1.AutoScalingGroupNodeInterface) (m NodeInterface) {
-		m.from(&n)
-		return
-	})
+	a.Interfaces = common.MapSlice(res.GetInterfaces(), common.ConvertFrom[v1.AutoScalingGroupNodeInterface, NodeInterface]())
 }
