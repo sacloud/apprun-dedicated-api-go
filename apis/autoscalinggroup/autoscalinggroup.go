@@ -16,14 +16,8 @@ type AutoScalingGroupAPI interface {
 	// Pass nil to `cursor` to get the first page, or
 	// previously returned `nextCursor` to get the next page.
 	List(ctx context.Context, elems int64, cursor *v1.AutoScalingGroupID) (list []v1.ReadAutoScalingGroupDetail, nextCursor *v1.AutoScalingGroupID, err error)
-
-	// Create creates a new AutoScalingGroup.
 	Create(ctx context.Context, params CreateParams) (group *v1.CreatedAutoScalingGroup, err error)
-
-	// Read retrieves an AutoScalingGroup by its ID.
 	Read(ctx context.Context, id v1.AutoScalingGroupID) (group *AutoScalingGroupDetail, err error)
-
-	// Delete deletes an AutoScalingGroup by its ID.
 	Delete(ctx context.Context, id v1.AutoScalingGroupID) error
 }
 
