@@ -16,14 +16,8 @@ type VersionAPI interface {
 	// Pass nil to `cursor` to get the first page, or
 	// previously returned `nextCursor` to get the next page.
 	List(ctx context.Context, elems int64, cursor *v1.ApplicationVersionNumber) (list []v1.ApplicationVersionDeploymentStatus, nextCursor *v1.ApplicationVersionNumber, err error)
-
-	// Create creates a new ApplicationVersion.
 	Create(ctx context.Context, params CreateParams) (version *v1.ReadApplicationVersionSummary, err error)
-
-	// Read retrieves an ApplicationVersion by its version number.
 	Read(ctx context.Context, id v1.ApplicationVersionNumber) (version *VersionDetail, err error)
-
-	// Delete deletes an ApplicationVersion by its version number.
 	Delete(ctx context.Context, id v1.ApplicationVersionNumber) error
 }
 
@@ -39,15 +33,7 @@ func NewVersionOp(client *v1.Client, applicationID v1.ApplicationID) *VersionOp 
 	}
 }
 
-func (op *VersionOp) List(
-	ctx context.Context,
-	maxItems int64,
-	cursor *v1.ApplicationVersionNumber,
-) (
-	versions []v1.ApplicationVersionDeploymentStatus,
-	nextCursor *v1.ApplicationVersionNumber,
-	err error,
-) {
+func (op *VersionOp) List(ctx context.Context, maxItems int64, cursor *v1.ApplicationVersionNumber) (versions []v1.ApplicationVersionDeploymentStatus, nextCursor *v1.ApplicationVersionNumber, err error) {
 	res, err := common.ErrorFromDecodedResponse("Version.List", func() (*v1.ListApplicationVersionResponse, error) {
 		return op.client.ListApplicationVersions(ctx, v1.ListApplicationVersionsParams{
 			ApplicationID: op.applicationID,
@@ -64,13 +50,7 @@ func (op *VersionOp) List(
 	return
 }
 
-func (op *VersionOp) Create(
-	ctx context.Context,
-	params CreateParams,
-) (
-	ver *v1.ReadApplicationVersionSummary,
-	err error,
-) {
+func (op *VersionOp) Create(ctx context.Context, params CreateParams) (ver *v1.ReadApplicationVersionSummary, err error) {
 	res, err := common.ErrorFromDecodedResponse("Version.Create", func() (*v1.CreateApplicationVersionResponse, error) {
 		return op.client.CreateApplicationVersion(ctx, saclient.Ptr(params.into()), v1.CreateApplicationVersionParams{
 			ApplicationID: op.applicationID,
@@ -84,13 +64,7 @@ func (op *VersionOp) Create(
 	return
 }
 
-func (op *VersionOp) Read(
-	ctx context.Context,
-	id v1.ApplicationVersionNumber,
-) (
-	ver *VersionDetail,
-	err error,
-) {
+func (op *VersionOp) Read(ctx context.Context, id v1.ApplicationVersionNumber) (ver *VersionDetail, err error) {
 	res, err := common.ErrorFromDecodedResponse("Version.Read", func() (*v1.GetApplicationVersionResponse, error) {
 		return op.client.GetApplicationVersion(ctx, v1.GetApplicationVersionParams{
 			ApplicationID: op.applicationID,
@@ -179,7 +153,7 @@ type CreateParams struct {
 	RegistryPassword       *string
 	RegistryPasswordAction v1.RegistryPasswordAction
 	ExposedPorts           []ExposedPort
-	Env                    []EnvironmentVariable
+	EnvVar                 []EnvironmentVariable
 }
 
 func (c *CreateParams) into() (ret v1.CreateApplicationVersion) {
@@ -197,7 +171,7 @@ func (c *CreateParams) into() (ret v1.CreateApplicationVersion) {
 	ret.SetRegistryPassword(common.IntoNullable[v1.NilString](c.RegistryPassword))
 	ret.SetRegistryPasswordAction(c.RegistryPasswordAction)
 	ret.SetExposedPorts(common.MapSlice(c.ExposedPorts, ExposedPort.into))
-	ret.SetEnv(common.MapSlice(c.Env, EnvironmentVariable.into))
+	ret.SetEnv(common.MapSlice(c.EnvVar, EnvironmentVariable.into))
 
 	return
 }
@@ -219,7 +193,7 @@ type VersionDetail struct {
 	ActiveNodeCount   int64
 	Created           int
 	ExposedPorts      []ExposedPort
-	Env               []EnvironmentVariable
+	EnvVar            []EnvironmentVariable
 }
 
 func (v *VersionDetail) from(res *v1.ReadApplicationVersionDetail) {
@@ -239,5 +213,5 @@ func (v *VersionDetail) from(res *v1.ReadApplicationVersionDetail) {
 	v.ActiveNodeCount = res.GetActiveNodeCount()
 	v.Created = res.GetCreated()
 	v.ExposedPorts = common.MapSlice(res.GetExposedPorts(), common.ConvertFrom[v1.ExposedPort, ExposedPort]())
-	v.Env = common.MapSlice(res.GetEnv(), common.ConvertFrom[v1.ReadEnvironmentVariable, EnvironmentVariable]())
+	v.EnvVar = common.MapSlice(res.GetEnv(), common.ConvertFrom[v1.ReadEnvironmentVariable, EnvironmentVariable]())
 }
