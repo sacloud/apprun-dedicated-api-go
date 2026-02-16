@@ -16,14 +16,8 @@ type VersionAPI interface {
 	// Pass nil to `cursor` to get the first page, or
 	// previously returned `nextCursor` to get the next page.
 	List(ctx context.Context, elems int64, cursor *v1.ApplicationVersionNumber) (list []v1.ApplicationVersionDeploymentStatus, nextCursor *v1.ApplicationVersionNumber, err error)
-
-	// Create creates a new ApplicationVersion.
 	Create(ctx context.Context, params CreateParams) (version *v1.ReadApplicationVersionSummary, err error)
-
-	// Read retrieves an ApplicationVersion by its version number.
 	Read(ctx context.Context, id v1.ApplicationVersionNumber) (version *VersionDetail, err error)
-
-	// Delete deletes an ApplicationVersion by its version number.
 	Delete(ctx context.Context, id v1.ApplicationVersionNumber) error
 }
 
