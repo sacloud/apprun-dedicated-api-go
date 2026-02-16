@@ -15,17 +15,9 @@ type CertificateAPI interface {
 	// Pass nil to `cursor` to get the first page, or
 	// previously returned `nextCursor` to get the next page.
 	List(ctx context.Context, elems int64, cursor *v1.CertificateID) (list []v1.ReadCertificate, nextCursor *v1.CertificateID, err error)
-
-	// Create creates a new Certificate.
 	Create(ctx context.Context, params CreateParams) (cert *v1.CreatedCertificate, err error)
-
-	// Read retrieves a Certificate by its ID.
 	Read(ctx context.Context, id v1.CertificateID) (cert *v1.ReadCertificate, err error)
-
-	// Update updates an existing Certificate.
 	Update(ctx context.Context, id v1.CertificateID, params UpdateParams) error
-
-	// Delete deletes a Certificate by its ID.
 	Delete(ctx context.Context, id v1.CertificateID) error
 }
 
