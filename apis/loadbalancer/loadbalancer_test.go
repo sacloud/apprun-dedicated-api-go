@@ -16,14 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setup(
-	t *testing.T,
-	v interface{ Encode(*jx.Encoder) },
-	s ...int,
-) (
-	assert *require.Assertions,
-	api LoadBalancerAPI,
-) {
+func setup(t *testing.T, v interface{ Encode(*jx.Encoder) }, s ...int) (assert *require.Assertions, api LoadBalancerAPI) {
 	cid := v1.ClusterID(uuid.New())
 	asgid := v1.AutoScalingGroupID(uuid.New())
 	assert = require.New(t)
