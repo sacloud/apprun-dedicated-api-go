@@ -158,7 +158,7 @@ func TestListNode(t *testing.T) {
 	assert, api := setup(t, &expected)
 
 	lbID := v1.LoadBalancerID(uuid.New())
-	actual, err := api.ListNode(t.Context(), lbID, 10, nil)
+	actual, err := api.ListNodes(t.Context(), lbID, 10, nil)
 
 	assert.NoError(err)
 	assert.NotNil(actual)
@@ -170,7 +170,7 @@ func TestListNode_failed(t *testing.T) {
 	assert, api := setup(t, &expected, int(expected.GetStatus()))
 
 	lbID := v1.LoadBalancerID(uuid.New())
-	actual, err := api.ListNode(t.Context(), lbID, 0, nil)
+	actual, err := api.ListNodes(t.Context(), lbID, 0, nil)
 
 	assert.Error(err)
 	assert.Nil(actual)
