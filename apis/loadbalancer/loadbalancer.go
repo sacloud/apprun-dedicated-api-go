@@ -15,14 +15,14 @@ type LoadBalancerAPI interface {
 	// List returns the list of LoadBalancers, paginated.
 	// Pass nil to `cursor` to get the first page, or
 	// previously returned `nextCursor` to get the next page.
-	List(ctx context.Context, elems int64, cursor *v1.LoadBalancerID) (list []v1.ReadLoadBalancerSummary, nextCursor *v1.LoadBalancerID, err error)
+	List(ctx context.Context, maxItems int64, cursor *v1.LoadBalancerID) (list []v1.ReadLoadBalancerSummary, nextCursor *v1.LoadBalancerID, err error)
 	Create(ctx context.Context, params CreateParams) (lb *v1.CreatedLoadBalancer, err error)
 	Read(ctx context.Context, id v1.LoadBalancerID) (lb *LoadBalancerDetail, err error)
 	Delete(ctx context.Context, id v1.LoadBalancerID) error
 
 	// ListNode returns the list of LoadBalancerNodes, paginated.
 	// Pass nil to `cursor` to get the first page.
-	ListNode(ctx context.Context, lbID v1.LoadBalancerID, elems int64, cursor *v1.LoadBalancerID) (list []v1.ReadLoadBalancerNodeSummary, err error)
+	ListNode(ctx context.Context, lbID v1.LoadBalancerID, maxItems int64, cursor *v1.LoadBalancerID) (list []v1.ReadLoadBalancerNodeSummary, err error)
 	ReadNode(ctx context.Context, lbID v1.LoadBalancerID, nodeID v1.LoadBalancerNodeID) (node *LoadBalancerNodeDetail, err error)
 }
 
@@ -40,7 +40,7 @@ func NewLoadBalancerOp(client *v1.Client, clusterID v1.ClusterID, autoScalingGro
 	}
 }
 
-func (op *LoadBalancerOp) List(ctx context.Context, maxItems int64, cursor *v1.LoadBalancerID) (lbs []v1.ReadLoadBalancerSummary, nextCursor *v1.LoadBalancerID, err error) {
+func (op *LoadBalancerOp) List(ctx context.Context, maxItems int64, cursor *v1.LoadBalancerID) (list []v1.ReadLoadBalancerSummary, nextCursor *v1.LoadBalancerID, err error) {
 	res, err := common.ErrorFromDecodedResponse("LoadBalancer.List", func() (*v1.ListLoadBalancersResponse, error) {
 		return op.client.ListLoadBalancers(ctx, v1.ListLoadBalancersParams{
 			ClusterID:          op.clusterID,
@@ -51,7 +51,7 @@ func (op *LoadBalancerOp) List(ctx context.Context, maxItems int64, cursor *v1.L
 	})
 
 	if res != nil {
-		lbs = res.LoadBalancers
+		list = res.LoadBalancers
 		nextCursor = common.FromOpt(res.NextCursor)
 	}
 
@@ -101,7 +101,7 @@ func (op *LoadBalancerOp) Delete(ctx context.Context, id v1.LoadBalancerID) erro
 	})
 }
 
-func (op *LoadBalancerOp) ListNode(ctx context.Context, lbID v1.LoadBalancerID, maxItems int64, cursor *v1.LoadBalancerID) (nodes []v1.ReadLoadBalancerNodeSummary, err error) {
+func (op *LoadBalancerOp) ListNode(ctx context.Context, lbID v1.LoadBalancerID, maxItems int64, cursor *v1.LoadBalancerID) (list []v1.ReadLoadBalancerNodeSummary, err error) {
 	res, err := common.ErrorFromDecodedResponse("LoadBalancer.ListNode", func() (*v1.ListLoadBalancerNodesResponse, error) {
 		return op.client.ListLoadBalancerNodes(ctx, v1.ListLoadBalancerNodesParams{
 			ClusterID:          op.clusterID,
@@ -113,7 +113,7 @@ func (op *LoadBalancerOp) ListNode(ctx context.Context, lbID v1.LoadBalancerID, 
 	})
 
 	if res != nil {
-		nodes = res.LoadBalancerNodes
+		list = res.LoadBalancerNodes
 	}
 
 	return

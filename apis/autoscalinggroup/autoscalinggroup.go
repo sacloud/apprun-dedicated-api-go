@@ -15,7 +15,7 @@ type AutoScalingGroupAPI interface {
 	// List returns the list of AutoScalingGroups, paginated.
 	// Pass nil to `cursor` to get the first page, or
 	// previously returned `nextCursor` to get the next page.
-	List(ctx context.Context, elems int64, cursor *v1.AutoScalingGroupID) (list []v1.ReadAutoScalingGroupDetail, nextCursor *v1.AutoScalingGroupID, err error)
+	List(ctx context.Context, maxItems int64, cursor *v1.AutoScalingGroupID) (list []v1.ReadAutoScalingGroupDetail, nextCursor *v1.AutoScalingGroupID, err error)
 	Create(ctx context.Context, params CreateParams) (group *v1.CreatedAutoScalingGroup, err error)
 	Read(ctx context.Context, id v1.AutoScalingGroupID) (group *AutoScalingGroupDetail, err error)
 	Delete(ctx context.Context, id v1.AutoScalingGroupID) error
@@ -33,7 +33,7 @@ func NewAutoScalingGroupOp(client *v1.Client, clusterID v1.ClusterID) *AutoScali
 	}
 }
 
-func (op *AutoScalingGroupOp) List(ctx context.Context, maxItems int64, cursor *v1.AutoScalingGroupID) (groups []v1.ReadAutoScalingGroupDetail, nextCursor *v1.AutoScalingGroupID, err error) {
+func (op *AutoScalingGroupOp) List(ctx context.Context, maxItems int64, cursor *v1.AutoScalingGroupID) (list []v1.ReadAutoScalingGroupDetail, nextCursor *v1.AutoScalingGroupID, err error) {
 	res, err := common.ErrorFromDecodedResponse("AutoScalingGroup.List", func() (*v1.ListAutoScalingGroupResponse, error) {
 		return op.client.ListAutoScalingGroups(ctx, v1.ListAutoScalingGroupsParams{
 			ClusterID: op.clusterID,
@@ -43,7 +43,7 @@ func (op *AutoScalingGroupOp) List(ctx context.Context, maxItems int64, cursor *
 	})
 
 	if res != nil {
-		groups = res.AutoScalingGroups
+		list = res.AutoScalingGroups
 		nextCursor = common.FromOpt(res.NextCursor)
 	}
 

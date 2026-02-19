@@ -14,7 +14,7 @@ type CertificateAPI interface {
 	// List returns the list of Certificates, paginated.
 	// Pass nil to `cursor` to get the first page, or
 	// previously returned `nextCursor` to get the next page.
-	List(ctx context.Context, elems int64, cursor *v1.CertificateID) (list []v1.ReadCertificate, nextCursor *v1.CertificateID, err error)
+	List(ctx context.Context, maxItems int64, cursor *v1.CertificateID) (list []v1.ReadCertificate, nextCursor *v1.CertificateID, err error)
 	Create(ctx context.Context, params CreateParams) (cert *v1.CreatedCertificate, err error)
 	Read(ctx context.Context, id v1.CertificateID) (cert *v1.ReadCertificate, err error)
 	Update(ctx context.Context, id v1.CertificateID, params UpdateParams) error
@@ -33,7 +33,7 @@ func NewCertificateOp(client *v1.Client, clusterID v1.ClusterID) *CertificateOp 
 	}
 }
 
-func (op *CertificateOp) List(ctx context.Context, maxItems int64, cursor *v1.CertificateID) (certificates []v1.ReadCertificate, nextCursor *v1.CertificateID, err error) {
+func (op *CertificateOp) List(ctx context.Context, maxItems int64, cursor *v1.CertificateID) (list []v1.ReadCertificate, nextCursor *v1.CertificateID, err error) {
 	res, err := common.ErrorFromDecodedResponse("Certificate.List", func() (*v1.ListCertificateResponse, error) {
 		return op.client.ListCertificate(ctx, v1.ListCertificateParams{
 			ClusterID: op.clusterID,
@@ -43,7 +43,7 @@ func (op *CertificateOp) List(ctx context.Context, maxItems int64, cursor *v1.Ce
 	})
 
 	if res != nil {
-		certificates = res.Certificates
+		list = res.Certificates
 		nextCursor = common.FromOpt(res.NextCursor)
 	}
 
@@ -76,7 +76,7 @@ func (op *CertificateOp) Create(ctx context.Context, req CreateParams) (ret *v1.
 	return
 }
 
-func (op *CertificateOp) Read(ctx context.Context, id v1.CertificateID) (ret *v1.ReadCertificate, err error) {
+func (op *CertificateOp) Read(ctx context.Context, id v1.CertificateID) (cert *v1.ReadCertificate, err error) {
 	res, err := common.ErrorFromDecodedResponse("Certificate.Read", func() (*v1.GetCertificateResponse, error) {
 		return op.client.GetCertificate(ctx, v1.GetCertificateParams{
 			ClusterID:     op.clusterID,
@@ -85,27 +85,27 @@ func (op *CertificateOp) Read(ctx context.Context, id v1.CertificateID) (ret *v1
 	})
 
 	if res != nil {
-		ret = &res.Certificate
+		cert = &res.Certificate
 	}
 	return
 }
 
 type UpdateParams CreateParams
 
-func (op *CertificateOp) Update(ctx context.Context, id v1.CertificateID, req UpdateParams) error {
+func (op *CertificateOp) Update(ctx context.Context, id v1.CertificateID, request UpdateParams) error {
 	return common.ErrorFromDecodedResponseE("Certificate.Update", func() error {
 		request := v1.UpdateCertificate{
-			Name:                       req.Name,
-			CertificatePem:             req.CertificatePEM,
-			PrivatekeyPem:              req.PrivateKeyPEM,
-			IntermediateCertificatePem: common.IntoOpt[v1.OptString](req.IntermediateCertificatePEM),
+			Name:                       request.Name,
+			CertificatePem:             request.CertificatePEM,
+			PrivatekeyPem:              request.PrivateKeyPEM,
+			IntermediateCertificatePem: common.IntoOpt[v1.OptString](request.IntermediateCertificatePEM),
 		}
-		params := v1.UpdateCertificateParams{
+		p := v1.UpdateCertificateParams{
 			ClusterID:     op.clusterID,
 			CertificateID: id,
 		}
 
-		return op.client.UpdateCertificate(ctx, &request, params)
+		return op.client.UpdateCertificate(ctx, &request, p)
 	})
 }
 

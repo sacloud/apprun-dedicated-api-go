@@ -18,14 +18,14 @@ type ApplicationAPI interface {
 	Create(ctx context.Context, name string, clusterID v1.ClusterID) (app *v1.CreatedApplication, err error)
 	Read(ctx context.Context, id v1.ApplicationID) (app *ApplicationDetail, err error)
 	Delete(ctx context.Context, id v1.ApplicationID) error
-	Containers(ctx context.Context, id v1.ApplicationID) (nodes []Placement, err error)
+	Containers(ctx context.Context, id v1.ApplicationID) (list []Placement, err error)
 }
 
 type ApplicationOp struct{ *v1.Client }
 
 func NewApplicationOp(client *v1.Client) *ApplicationOp { return &ApplicationOp{Client: client} }
 
-func (op *ApplicationOp) List(ctx context.Context, maxItems int64, cursor *string) (apps []v1.ReadApplicationDetail, nextCursor *string, err error) {
+func (op *ApplicationOp) List(ctx context.Context, maxItems int64, cursor *string) (list []v1.ReadApplicationDetail, nextCursor *string, err error) {
 	res, err := common.ErrorFromDecodedResponse("Application.List", func() (*v1.ListApplicationResponse, error) {
 		return op.Client.ListApplications(ctx, v1.ListApplicationsParams{
 			Cursor:   common.IntoOpt[v1.OptString](cursor),
@@ -34,7 +34,7 @@ func (op *ApplicationOp) List(ctx context.Context, maxItems int64, cursor *strin
 	})
 
 	if res != nil {
-		apps = res.Applications
+		list = res.Applications
 		nextCursor = common.FromOpt(res.NextCursor)
 	}
 
@@ -103,7 +103,7 @@ type Placement struct {
 	Desired         v1.ApplicationPeekDesiredContainersResponse
 }
 
-func (op *ApplicationOp) Containers(ctx context.Context, id v1.ApplicationID) (nodes []Placement, err error) {
+func (op *ApplicationOp) Containers(ctx context.Context, id v1.ApplicationID) (list []Placement, err error) {
 	res, err := common.ErrorFromDecodedResponse("Application.Containers", func() (*v1.GetApplicationContainersResponse, error) {
 		return op.Client.GetApplicationContainers(ctx, v1.GetApplicationContainersParams{
 			ApplicationID: id,
@@ -111,7 +111,7 @@ func (op *ApplicationOp) Containers(ctx context.Context, id v1.ApplicationID) (n
 	})
 
 	if res != nil {
-		nodes = make([]Placement, len(res.Nodes))
+		list = make([]Placement, len(res.Nodes))
 		for i, n := range res.Nodes {
 			var m Placement
 			m.NodeID = n.GetNodeID()
@@ -121,7 +121,7 @@ func (op *ApplicationOp) Containers(ctx context.Context, id v1.ApplicationID) (n
 			if d, ok := n.GetDesired().Get(); ok {
 				m.Desired = d
 			}
-			nodes[i] = m
+			list[i] = m
 		}
 	}
 
