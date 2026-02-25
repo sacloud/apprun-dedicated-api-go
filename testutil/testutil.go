@@ -22,6 +22,7 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/google/uuid"
 	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
+	application "github.com/sacloud/apprun-dedicated-api-go/apis/application"
 	cluster "github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	super "github.com/sacloud/packages-go/testutil"
@@ -68,6 +69,24 @@ func NewTestClient(v interface{ Encode(*jx.Encoder) }, s ...int) (c *v1.Client, 
 
 	if e != nil {
 		c = nil
+	}
+
+	return
+}
+
+func IntegratedApplication(ctx context.Context, assert *require.Assertions, client *v1.Client, cid v1.ClusterID) (aid v1.ApplicationID, deleter func()) {
+	api := application.NewApplicationOp(client)
+	assert.NotNil(api)
+
+	appName := super.RandomName("test-", 15, super.CharSetAlphaNum)
+	app, err := api.Create(ctx, appName, cid)
+	assert.NoError(err)
+	assert.NotNil(app)
+
+	aid = app.ApplicationID
+	deleter = func() {
+		err := api.Delete(ctx, aid)
+		assert.NoError(err)
 	}
 
 	return
