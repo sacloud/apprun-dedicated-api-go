@@ -4,6 +4,7 @@
 package common
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -21,6 +22,7 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/google/uuid"
 	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
+	cluster "github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	super "github.com/sacloud/packages-go/testutil"
 	"github.com/sacloud/saclient-go"
@@ -311,5 +313,34 @@ func RepeatedList[T, U any](yield func(*U) ([]T, *U)) (ret []T) {
 			break
 		}
 	}
+	return
+}
+
+func IntegratedCluster(ctx context.Context, assert *require.Assertions, client *v1.Client) (cid v1.ClusterID, deleter func()) {
+	api := cluster.NewClusterOp(client)
+	assert.NotNil(api)
+
+	spid := os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
+	clusterName := super.RandomName("test-", 15, super.CharSetAlphaNum)
+	cluster, err := api.Create(ctx, cluster.CreateParams{
+		Name:               clusterName,
+		ServicePrincipalID: spid,
+		LetsEncryptEmail:   nil,
+		Ports: []v1.CreateLoadBalancerPort{
+			{
+				Port:     443,
+				Protocol: v1.CreateLoadBalancerPortProtocolHTTPS,
+			},
+		},
+	})
+	assert.NoError(err)
+	assert.NotNil(cluster)
+
+	cid = cluster.ClusterID
+	deleter = func() {
+		err := api.Delete(ctx, cid)
+		assert.NoError(err)
+	}
+
 	return
 }
