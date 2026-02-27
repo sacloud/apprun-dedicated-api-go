@@ -23,8 +23,10 @@ import (
 	"github.com/google/uuid"
 	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
 	application "github.com/sacloud/apprun-dedicated-api-go/apis/application"
+	"github.com/sacloud/apprun-dedicated-api-go/apis/autoscalinggroup"
 	cluster "github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
+	"github.com/sacloud/apprun-dedicated-api-go/apis/workernode"
 	super "github.com/sacloud/packages-go/testutil"
 	"github.com/sacloud/saclient-go"
 	"github.com/stretchr/testify/require"
@@ -359,6 +361,103 @@ func IntegratedCluster(ctx context.Context, assert *require.Assertions, client *
 	deleter = func() {
 		err := api.Delete(ctx, cid)
 		assert.NoError(err)
+	}
+
+	return
+}
+
+func IntegratedAsg(ctx context.Context, assert *require.Assertions, client *v1.Client, cid v1.ClusterID) (asgID v1.AutoScalingGroupID, deleter func()) {
+	api := autoscalinggroup.NewAutoScalingGroupOp(client, cid)
+	assert.NotNil(api)
+
+	asgName := super.RandomName("test-", 15, super.CharSetAlphaNum)
+	asg, err := api.Create(ctx, autoscalinggroup.CreateParams{
+		Name:                   asgName,
+		Zone:                   "is1a",
+		NameServers:            []v1.IPv4{"133.242.0.3"},
+		WorkerServiceClassPath: "cloud/apprun/dedicated/worker/1vcpu_2gb", // :FIXME: there is no way to find a minimal class
+		MinNodes:               1,
+		MaxNodes:               1,
+		Interfaces: []autoscalinggroup.NodeInterface{{
+			InterfaceIndex: 0,
+			Upstream:       "shared",
+			IpPool:         []v1.IpRange{},
+			NetmaskLen:     nil,
+			DefaultGateway: nil,
+			PacketFilterID: nil,
+			ConnectsToLB:   true,
+		}},
+	})
+	assert.NoError(err)
+	assert.NotNil(asg)
+
+	asgID = asg.AutoScalingGroupID
+	deleter = func() {
+		// worker node deletion may take some time
+		nodeop := workernode.NewWorkerNodeOp(client, cid, asgID)
+		tkr := time.NewTicker(16 * time.Second)
+		defer tkr.Stop()
+
+		nodes := RepeatedList(func(cursor *v1.WorkerNodeID) (res []workernode.WorkerNodeDetail, next *v1.WorkerNodeID) {
+			res, next, err := nodeop.List(ctx, 10, cursor)
+			assert.NoError(err)
+			return
+		})
+		if len(nodes) != 0 {
+			for _, node := range nodes {
+				err := nodeop.Update(ctx, node.WorkerNodeID, true)
+				assert.NoError(err)
+				fmt.Printf("requested: to drain %v\n", uuid.UUID(node.WorkerNodeID).String())
+			}
+		loop1:
+			for {
+				var alive []workernode.WorkerNodeDetail
+				for _, node := range nodes {
+					node, err := nodeop.Read(ctx, node.WorkerNodeID)
+					if saclient.IsNotFoundError(err) {
+						// gone, nothing to do
+						continue
+					} else if node.Creating {
+						fmt.Printf("waiting for WN creation: %v\n", uuid.UUID(node.WorkerNodeID).String())
+						alive = append(alive, *node)
+					}
+				}
+				if len(alive) == 0 {
+					break loop1
+				} else {
+					select {
+					case <-ctx.Done():
+						assert.Fail("timeout while waiting for worker nodes to be drained")
+						break loop1
+					case <-tkr.C:
+						continue loop1
+					}
+				}
+			}
+		}
+		err := api.Delete(ctx, asgID)
+		assert.NoError(err)
+
+	loop2:
+		for {
+			select {
+			case <-ctx.Done():
+				assert.Fail("timeout while waiting for worker nodes to be drained")
+				break loop2
+			case <-tkr.C:
+				actual, err := api.Read(ctx, asgID)
+
+				switch {
+				case saclient.IsNotFoundError(err):
+					break loop2
+				case err != nil:
+					assert.NoError(err)
+				default:
+					assert.NotNil(actual)
+					fmt.Printf("waiting for ASG deletion: %v\n", uuid.UUID(actual.AutoScalingGroupID).String())
+				}
+			}
+		}
 	}
 
 	return
