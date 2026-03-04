@@ -193,7 +193,7 @@ func TestIntegrated(t *testing.T) {
 			RegistryPassword:       nil,
 			RegistryPasswordAction: v1.RegistryPasswordActionRemove,
 			ExposedPorts:           nil,
-			Env:                    nil,
+			EnvVars:                nil,
 		})
 		assert.NoError(err)
 		assert.NotNil(version)

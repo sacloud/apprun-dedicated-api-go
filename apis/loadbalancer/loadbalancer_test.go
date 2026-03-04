@@ -248,7 +248,7 @@ func TestIntegrated(t *testing.T) {
 			tkr := time.NewTicker(16 * time.Second)
 			defer tkr.Stop()
 
-			nodes, err := api.ListNode(t.Context(), lbID, 10, nil)
+			nodes, err := api.ListNodes(t.Context(), lbID, 10, nil)
 			assert.NoError(err)
 
 			// a load balancer node needs to be deleted _after_ it finished provisioned
@@ -327,7 +327,7 @@ func TestIntegrated(t *testing.T) {
 
 		t.Run("ListNode", func(t *testing.T) {
 			nodes := apprun_test.RepeatedList(func(cursor *v1.LoadBalancerID) (res []v1.ReadLoadBalancerNodeSummary, next *v1.LoadBalancerID) {
-				res, err := api.ListNode(t.Context(), lbID, 10, cursor)
+				res, err := api.ListNodes(t.Context(), lbID, 10, cursor)
 				assert.NoError(err)
 				return
 			})
@@ -337,7 +337,7 @@ func TestIntegrated(t *testing.T) {
 		t.Run("ReadNode", func(t *testing.T) {
 			// First list nodes to get a node ID
 			nodes := apprun_test.RepeatedList(func(cursor *v1.LoadBalancerID) (res []v1.ReadLoadBalancerNodeSummary, next *v1.LoadBalancerID) {
-				res, err := api.ListNode(t.Context(), lbID, 10, cursor)
+				res, err := api.ListNodes(t.Context(), lbID, 10, cursor)
 				assert.NoError(err)
 				return
 			})
