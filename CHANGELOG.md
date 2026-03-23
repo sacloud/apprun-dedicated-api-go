@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.2.0](https://github.com/sacloud/apprun-dedicated-api-go/compare/v0.1.0...v0.2.0) - 2026-03-22
+- add support endpoint setting from env and profiles by @to-shoji in https://github.com/sacloud/apprun-dedicated-api-go/pull/28
+
 ## [v0.1.0](https://github.com/sacloud/apprun-dedicated-api-go/commits/v0.1.0) - 2026-03-11
 - Fundamental parts by @shyouhei in https://github.com/sacloud/apprun-dedicated-api-go/pull/5
 - generate `v1` using `ogen` by @shyouhei in https://github.com/sacloud/apprun-dedicated-api-go/pull/6
