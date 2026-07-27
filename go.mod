@@ -7,7 +7,7 @@ toolchain go1.26.1
 tool github.com/ogen-go/ogen/cmd/ogen
 
 require (
-	github.com/go-faster/errors v0.7.1
+	github.com/go-faster/errors v0.8.0
 	github.com/go-faster/jx v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/ogen-go/ogen v1.20.3
