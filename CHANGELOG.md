@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.2.2](https://github.com/sacloud/apprun-dedicated-api-go/compare/v0.2.1...v0.2.2) - 2026-08-03
+- add: version ラッパー型の任意フィールドに omitempty を付与 by @fujiwara in https://github.com/sacloud/apprun-dedicated-api-go/pull/47
+- update README for repository transition by @shyouhei in https://github.com/sacloud/apprun-dedicated-api-go/pull/54
+
 ## [v0.2.1](https://github.com/sacloud/apprun-dedicated-api-go/compare/v0.2.0...v0.2.1) - 2026-05-25
 - add: JSON tags to all exported struct fields in wrapper packages by @yamamoto-febc in https://github.com/sacloud/apprun-dedicated-api-go/pull/44
 - ci: bump actions/setup-go from 6.3.0 to 6.4.0 by @dependabot[bot] in https://github.com/sacloud/apprun-dedicated-api-go/pull/33
