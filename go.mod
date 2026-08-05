@@ -14,7 +14,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/ogen-go/ogen v1.20.3
 	github.com/sacloud/packages-go v0.1.0
-	github.com/sacloud/saclient-go v0.3.7
+	github.com/sacloud/saclient-go v0.4.0
 	github.com/stretchr/testify v1.11.1
 )
 
